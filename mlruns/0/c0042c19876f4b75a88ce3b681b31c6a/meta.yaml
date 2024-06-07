@@ -1,0 +1,15 @@
+artifact_uri: mlflow-artifacts:/0/c0042c19876f4b75a88ce3b681b31c6a/artifacts
+end_time: 1714493044474
+entry_point_name: ''
+experiment_id: '0'
+lifecycle_stage: active
+run_id: c0042c19876f4b75a88ce3b681b31c6a
+run_name: agreeable-ram-300
+run_uuid: c0042c19876f4b75a88ce3b681b31c6a
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1714493044410
+status: 4
+tags: []
+user_id: abdelwahed
