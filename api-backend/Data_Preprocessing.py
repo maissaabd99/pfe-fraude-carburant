@@ -11,6 +11,7 @@ import pickle
 matplotlib.use('Agg')
 
 class Data_Preprocessing ():
+    
     def __init__ (self):
         print("shy")
 
@@ -19,6 +20,7 @@ class Data_Preprocessing ():
         df.drop(columns=[col for col in columns_names if col in df.columns], axis=1, inplace=True)
 
     def process_data(self, filepath) :
+
         gp2_carburant = pd.read_csv(filepath, delimiter=",")
         print(gp2_carburant.sample(5))
         print(gp2_carburant.shape) 
@@ -26,12 +28,8 @@ class Data_Preprocessing ():
         print(gp2_carburant.isnull().sum())
         
         #--------------- I - Analyse et prétraitement des caractéristiques---------------
-        cols = [
-            "is_modified_qty","is_modified_date","is_modified_odometre",
-            "is_modified_coutL","lon","lat","numPaiement",
-        ]
-        #gp2_carburant = gp2_carburant.drop(["is_modified_qty","is_modified_date","is_modified_odometre","is_modified_coutL","lon","lat",
-        #        "numPaiement",],axis=1)
+        cols = ["numPaiement" ]
+       
         self.drop_columns(gp2_carburant, cols)
         
         # Vérifions la suppresion
@@ -47,6 +45,8 @@ class Data_Preprocessing ():
         self.drop_columns(gp2_carburant,["coutT", "coutL", "id"])
         print(gp2_carburant.head())
        
+        #--------------------------- 1 - Caractéristiques note-------------------
+
         # renommer la colonne note en type_carburant
         gp2_carburant = gp2_carburant.rename(columns={"note": "type_carburant"})
         
@@ -56,45 +56,7 @@ class Data_Preprocessing ():
                 
         # fusionner
         gp2_carburant["type_carburant"].replace("Gasoil", "Gazoil", inplace=True)     
-                 
-        #--------------------- 2 - Caractéristique : Station ------------------------------
-        
-        #data_with_zone = ws.Web_scrapping_Station.web_scrapping_station(gp2_carburant)
-        #data_with_gouvernorat = get_gouvernorat(data_with_zone)
-        #gp2_carburant = data_with_gouvernorat
-       
-        #------------------------------ 3 - Caractéristique : Matricule -----------------------------------
-        nbr = gp2_carburant["matricule"].unique()
-        print("Nous avons ", len(nbr), "véhicule distincts")
-        
-        # nombre d'observation par véhicule
-        print(gp2_carburant["matricule"].value_counts())
-             
-        # Regroupement des matricules inconnues
-        data = gp2_carburant        
-        matricules = data["matricule"].unique()
-        df_matricule = data[data["matricule"] == 111111111]
-        df_matricule
-        new_data = pd.DataFrame()
-        for numcarte in df_matricule["typePaiement"].unique():
-            data_aux = df_matricule[df_matricule["typePaiement"] == numcarte]
-            newmat = choice([i for i in range(100, 1000) if i not in matricules])
-            data_aux["matricule"] = newmat
-            new_data = pd.concat([new_data, data_aux], ignore_index=True)
-        
-        new_data
-        
-        # maintenant remplacer la partie transformée dans le dataset original
-        data = data[data["matricule"] != 111111111]
-        data = pd.concat([data, new_data], ignore_index=True)
-        
-        # avant les transformation
-        print("Nombre de véhicules avant la transformation : ",len(gp2_carburant["matricule"].unique()))
-        # après la transformation
-        print("Nombre de véhicules après la transformation : ", len(data["matricule"].unique()))
-        
-        gp2_carburant = data 
-        print(gp2_carburant)
+                
         
         #------ 4 - Trouver la différence en jours entre les date consécutives - diff_date--------        
         gp2 = gp2_carburant
@@ -129,47 +91,26 @@ class Data_Preprocessing ():
             print(sub_data_frame[0:1])
         
             new_dataframe = pd.concat([new_dataframe, sub_data_frame], ignore_index=True) 
+
         gp2_carburant = new_dataframe
         print(gp2_carburant.isnull().sum())
-        
-        #--------------------------------- 5 - Caratéristique : typePaiment-------------------------------
-        gp2_carburant["typePaiement"]
-        # * Nous allons extraire juste le numéro de la carte (valeur numérique)
-        def extraire_nombres(chaine):
-            nombres = re.findall(
-                r"\d+", chaine
-            )  # Utilisation d'une expression régulière pour extraire les nombres
-            return [int(nombre) for nombre in nombres]  # Convertir les nombres en entiers
-        
-        gp2_carburant["typePaiement"] = gp2_carburant["typePaiement"].apply(
-            lambda x: extraire_nombres(x))
-        gp2_carburant["typePaiement"] = gp2_carburant["typePaiement"].apply(
-            lambda x: x[0] if len(x) > 0 else None)     
-        print(gp2_carburant.head())
-        
+
+        x  = Web_Scrapping().web_scrapping_station(gp2_carburant)        
         #--------------------------- II - Encodage des variables catégorielles----------------- 
+        gp2_carburant = x
         gp2_carburant = self.data_encoding(gp2_carburant)        
         gp2_carburant.to_csv("gp2_carburant_transformed_diff_date_3.csv", index=False)
         return gp2_carburant
     
-    #encodage des variables catégorielles
+    #------------------------ Fonction encodage des variables catégorielles -------------------
     def data_encoding(gp2_carburant) :
         label_encoders = {}
         le_gouvernorat = LabelEncoder()
         le_carburant = LabelEncoder()
-        le_fournisseur = LabelEncoder()
-        #gp2_carburant['station_enc'] = le_station.fit_transform(gp2_carburant['station'])
+
         gp2_carburant['type_carburant_enc'] = le_carburant.fit_transform(gp2_carburant['type_carburant'])
-        gp2_carburant['fournisseur_enc'] = le_fournisseur.fit_transform(gp2_carburant['fournisseur'])
         gp2_carburant['gouvernorat_enc'] = le_gouvernorat.fit_transform(gp2_carburant['gouvernorat'])
 
-        label_encoders["type_carburant"] = le_carburant
-        label_encoders["gouvernorat"] = le_gouvernorat
-        label_encoders["fournisseur"] = le_fournisseur
-
-        # Enregistrement des encodeurs dans un fichier
-        with open('label_encoders.pkl', 'wb') as f:
-            pickle.dump(label_encoders, f)
         return gp2_carburant
    
    #get annotated dataset with isolation forest 

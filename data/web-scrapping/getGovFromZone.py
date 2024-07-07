@@ -1,7 +1,9 @@
 import pandas as pd
 from geopy.geocoders import Nominatim
 
-def get_address(locality_name):
+class getGov ():
+
+  def get_address(locality_name):
     geolocator = Nominatim(user_agent="my_geocoder")
     location = geolocator.geocode(locality_name,language='fr', country_codes=['TN'])
     if location:
@@ -9,15 +11,16 @@ def get_address(locality_name):
     else:
         return "Adresse non trouvée"
     
-def get_gouvernorat(gp2_carburant) :
+    
+  def get_gouvernorat(self, gp2_carburant) :
     gp2_carburant['gouvernorat'] = ""
-    i =0
+    i = 0
     zones = gp2_carburant['zone'].unique()
     dict_data = {'zone' :[],'gouvernorat' :[]}
     
     for zone in zones :
         dict_data['zone'].append(zone)
-        address = get_address(zone)
+        address = self.get_address(zone)
         if address != "Adresse non trouvée" :
             parts = address.split("Gouvernorat")
             # Trouvez la partie de la chaîne après "Gouvernorat"
@@ -47,6 +50,6 @@ def get_gouvernorat(gp2_carburant) :
         return final_dictionnaire.get(zone)
      
     gp2_carburant['gouvernorat'] = gp2_carburant['zone'].map(mapper)
-    gp2_carburant.to_csv('gp2_carburant_transformed_diff_date_2.csv', index=False)
+    #gp2_carburant.to_csv('gp2_carburant_transformed_diff_date_2024.csv', index=False)
     return gp2_carburant
     

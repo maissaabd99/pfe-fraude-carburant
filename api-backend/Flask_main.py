@@ -5,7 +5,7 @@ from flask_cors import CORS
 import json
 import pandas as pd
 from Model_explanation import Model_Explanation
-from  Model_Train import Model_Train
+from Model_Train import Model_Train
 
 app = Flask(__name__)
 CORS(app, origins='http://localhost:3000/*')
